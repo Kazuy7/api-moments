@@ -39,7 +39,7 @@ export default class MomentsController {
     }
 
     public async index() { // Busca todos os registros
-        const moments = await Moment.query().preload('comments')
+        const moments = await Moment.query().preload('comments') // Carrega os comentários junto
 
         return {
             data: moments,
@@ -49,14 +49,14 @@ export default class MomentsController {
     public async show({params}: HttpContextContract) { // Busca um resgistro por id
         const moment = await Moment.findOrFail(params.id)
 
-        await moment.load('comments')
+        await moment.load('comments') // Traz todos os comentários do momento selecionado
 
         return {
             data: moment,
         }
     }
 
-    public async destroy({params}: HttpContextContract) {
+    public async destroy({params}: HttpContextContract) { // Delete
         const moment = await Moment.findOrFail(params.id)
 
         await moment.delete()
@@ -67,33 +67,33 @@ export default class MomentsController {
         }
     }
 
-    public async update({params, request}: HttpContextContract) {
-        const body = request.body()
+    public async update({params, request}: HttpContextContract) { // Atualizar informações
+        const body = request.body() // Pega informações do body
 
-        const moment = await Moment.findOrFail(params.id)
+        const moment = await Moment.findOrFail(params.id) // Verifica se existe o momento pelo id
 
-        moment.title = body.title
-        moment.description = body.description
+        moment.title = body.title // Substituindo os dados que vieram do body
+        moment.description = body.description // Substituindo os dados que vieram do body
 
-        if(moment.image != body.image || !moment.image) {
-            const image = request.file('image', this.validationOptions)
+        if(moment.image != body.image || !moment.image) { // Verifica se a imagem é a mesma para não gerar substituição desnecessária & verifica se o momento não possui uma imagem
+            const image = request.file('image', this.validationOptions) // Puxa a imagem
 
-            if (image) {
-            const imageName = `${uuidv4()}.${image.extname}`
+            if (image) { // Verifica se a imagem veio
+            const imageName = `${uuidv4()}.${image.extname}` // Refaz o nome
 
-            await image.move(Application.tmpPath('uploads'), {
+            await image.move(Application.tmpPath('uploads'), { // Move para uploads
                 name: imageName
             })
 
-            moment.image = imageName
+            moment.image = imageName // Substitui a imagem
             }
         }
 
-        await moment.save()
+        await moment.save() // Método para atualizar um dado já existente
 
         return {
             message: "Momento atualizado com sucesso!",
-            data: moment,
+            data: moment, // Retorna o dado atualizado
         }
     }
 }
